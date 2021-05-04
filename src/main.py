@@ -1,7 +1,8 @@
 """ Exact and approximate algorithms for subset sum problem """
 
-def exact_dyn(items, n, k):
+def exact_dyn(items, k):
     """ Exact algorithm using dynamic programming """
+    n = len(items)
     array = [[0 for _ in range(k + 1)] for _ in range(n + 1)]
     for i in range(n + 1):
         for j in range(k + 1):
@@ -19,7 +20,11 @@ def exact_dyn(items, n, k):
 
 def exact_exh(items, k):
     """ Exact algorithm using branch and prune """
-    pass
+    potential_solutions = [0]
+    for item in items:
+        potential_solutions = add_solutions(potential_solutions, item)
+        potential_solutions = list(filter(lambda s : s <= k, potential_solutions))
+    return max(potential_solutions)
 
 
 def greedy(items, k):
@@ -33,16 +38,36 @@ def greedy(items, k):
             result.append(item)
             curr_sum += item
 
-    return result
+    return sum(result)
 
 
 def fptas(items, k, epsilon):
     """ Approximate algorithm that is FPTAS. Epsilon controls how good the
         approximation is"""
-    l = [0]
+    potential_solutions = [0]
+    trim_factor = epsilon / (2 * len(items))
     for item in items:
-        new_l = merge_and_sort(l[-1], l[-1] + item)
+        potential_solutions = add_solutions(potential_solutions, item)
+        potential_solutions = trim(potential_solutions, trim_factor)
+        potential_solutions = list(filter(lambda s : s <= k, potential_solutions))
+    return max(potential_solutions)
 
+def add_solutions(l, item):
+    new_l = []
+    for num in l:
+        new_l.append(num + item)
+    l += new_l
+    return list(set(l))
+
+def trim(l, delta):
+    l = sorted(l)
+    trimmed_l = [l[0]]
+    last = l[0]
+    for num in l:
+        if num > last * (1 + delta):
+            trimmed_l.append(num)
+            last = num
+    return trimmed_l
 
 
 def get_input():
@@ -51,4 +76,8 @@ def get_input():
     ls = []
     for _ in range(n):
         ls.append(int(input()))
-    return ls
+    return (ls, k)
+
+
+if __name__ == "__main__":
+    items, k = get_input()
