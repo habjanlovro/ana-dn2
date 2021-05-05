@@ -1,5 +1,14 @@
 """ Exact and approximate algorithms for subset sum problem """
 
+import timeit
+
+def wrapper(f, *args, **kwargs):
+    """ Wrapper for timeit function """
+    def wrapped():
+        return f(*args, **kwargs)
+    return wrapped
+
+
 def exact_dyn(items, k):
     """ Exact algorithm using dynamic programming """
     n = len(items)
@@ -23,22 +32,20 @@ def exact_exh(items, k):
     potential_solutions = [0]
     for item in items:
         potential_solutions = add_solutions(potential_solutions, item)
-        potential_solutions = list(filter(lambda s : s <= k, potential_solutions))
+        potential_solutions = [s for s in potential_solutions if s <= k]
     return max(potential_solutions)
 
 
 def greedy(items, k):
     """ Greedy algorithm that is 2-approximate """
-    result = []
     sorted_items = sorted(items, reverse = True)
     curr_sum = 0
 
     for item in sorted_items:
         if item <= k - curr_sum:
-            result.append(item)
             curr_sum += item
 
-    return sum(result)
+    return curr_sum
 
 
 def fptas(items, k, epsilon):
@@ -49,7 +56,7 @@ def fptas(items, k, epsilon):
     for item in items:
         potential_solutions = add_solutions(potential_solutions, item)
         potential_solutions = trim(potential_solutions, trim_factor)
-        potential_solutions = list(filter(lambda s : s <= k, potential_solutions))
+        potential_solutions = [s for s in potential_solutions if s <= k]
     return max(potential_solutions)
 
 def add_solutions(l, item):
@@ -81,3 +88,20 @@ def get_input():
 
 if __name__ == "__main__":
     items, k = get_input()
+    print("Exact DYN time:")
+    print(timeit.timeit(wrapper(exact_dyn, items, k), number = 1))
+    print()
+
+    print("Exact EXH:")
+    print(timeit.timeit(wrapper(exact_exh, items, k), number = 1))
+    print()
+
+    print("2-approx:")
+    print(timeit.timeit(wrapper(greedy, items, k), number = 1))
+    print()
+
+    epsilon = 0.0
+    while epsilon <= 0.5:
+        t = timeit.timeit(wrapper(fptas, items, k, epsilon), number = 1)
+        print(f"fptas %1.2f:\t %f" % (epsilon, t))
+        epsilon += 0.05
