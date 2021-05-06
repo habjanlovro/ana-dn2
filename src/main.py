@@ -1,6 +1,8 @@
 """ Exact and approximate algorithms for subset sum problem """
 
 import timeit
+import matplotlib.pyplot as plt
+
 
 def wrapper(f, *args, **kwargs):
     """ Wrapper for timeit function """
@@ -86,8 +88,73 @@ def get_input():
     return (ls, k)
 
 
+def meausre_fptas(items, k):
+    epsilons = []
+    times = []
+
+    epsilon = 0.0
+    while epsilon <= 1:
+        t = timeit.timeit(wrapper(fptas, items, k, epsilon), number = 1)
+        epsilons.append(epsilon)
+        times.append(t)
+        print(f"fptas %1.2f:\t %f" % (epsilon, t))
+        epsilon += 0.05
+
+    plt.plot(epsilons, times)
+    plt.xlabel("Epsilon value")
+    plt.ylabel("Execution time")
+    plt.show()
+
+
+def dyno_hard():
+    times = []
+    n = []
+    for i in range(5, 20):
+        items, k = generate_bad_dyno(i)
+        t = timeit.timeit(wrapper(exact_dyn, items, k), number = 1)
+
+        n.append(i)
+        times.append(t)
+
+    plt.plot(n, times)
+    plt.xlabel("Size of A")
+    plt.ylabel("Execution time")
+    plt.show()
+
+
+def generate_bad_exh(n):
+    items = [2 ** i for i in range(1, n)]
+    k = 2 ** n
+    return items, k
+
+def exh_hard():
+    times = []
+    n = []
+    for i in range(5, 20):
+        items, k = generate_bad_exh(i)
+        t = timeit.timeit(wrapper(exact_dyn, items, k), number = 1)
+
+        n.append(i)
+        times.append(t)
+
+    plt.plot(n, times)
+    plt.xlabel("Size of A")
+    plt.ylabel("Execution time")
+    plt.show()
+
+
+
+
+def generate_bad_dyno(n):
+    A = [i for i in range(1, n+1)]
+    k = 2 ** n
+    return A, k
+
+
 if __name__ == "__main__":
     items, k = get_input()
+
+
     print("Exact DYN time:")
     print(timeit.timeit(wrapper(exact_dyn, items, k), number = 1))
     print()
@@ -99,9 +166,3 @@ if __name__ == "__main__":
     print("2-approx:")
     print(timeit.timeit(wrapper(greedy, items, k), number = 1))
     print()
-
-    epsilon = 0.0
-    while epsilon <= 0.5:
-        t = timeit.timeit(wrapper(fptas, items, k, epsilon), number = 1)
-        print(f"fptas %1.2f:\t %f" % (epsilon, t))
-        epsilon += 0.05
