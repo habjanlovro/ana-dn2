@@ -117,24 +117,57 @@ Primera instanc:
 
 \subsection{Požrešni algoritem}
 
-Požrešni algoritem rešitev najde v $O(n \log n)$ času, kjer je $n$ število predmetov. Vemo, da bo najslabša rešitev največ dvakrat slabša od optimalne, kar lahko pokažemo na primeru $A = \{(M + 1), M, M \}, k = 2M$, kjer bomo dobili rešitev $(M+1)$. V splošnem mora veljati $\max\{A\} < k < \max\{A\} + \min\{A\}$. S tem zagotovimo, da bo izbran le največji element iz $A$.
+Požrešni algoritem rešitev najde v $O(n \log n)$ času, kjer je $n$ število
+predmetov. Vemo, da bo najslabša rešitev največ dvakrat slabša od optimalne, kar
+lahko pokažemo na primeru $A = \{(M + 1), M, M \}, k = 2M$, kjer bomo dobili
+rešitev $(M+1)$. V splošnem mora veljati $\max\{A\} < k < \max\{A\} + \min\{A\}$
+in želimo, da je $\max\{A\} \approx k/2$. S tem zagotovimo, da bo kot rešitev
+izbran le največji element iz $A$.
 
-Primera instanc:
-\begin{itemize}
-	\item $A = \{ 11, 10, 10 \}$, $k = 20$
-	\item $A = \{ 11, 9, 10, 12, 13, 14 \}$, $k = 22$
-\end{itemize}
+Za empirično ovrednotenje smo generirali instance problema, kjer smo elemente
+$A$ naključno generirali na intervalu $[\lfloor k/2 \cdot (1 - p) \rfloor,
+\lceil k/2 \cdot (1 + p) \rceil]$ in na koncu dodali še element $\lceil k/2
+\cdot (1 + p) \rceil + 1$. Slika \ref{fig:greedy} prikazuje različna razmerja
+med dobljeno in optimalno rešitev, kjer je $p \in [0.05, 0.2]$, $n = 10$ in
+kjer je bil $k$ naključno vzet z intervala $[100, 500]$ in elementi v $A$
+definirani po opisanem postopku.
+
+\begin{figure}
+	\centering
+	\includegraphics[width=0.9\linewidth]{figs/greedy-bad.png}
+	\caption{Razmerja rešitev požrešnega algoritma in optimalnih rešitev za
+		slabe instance}
+	\label{fig:greedy}
+\end{figure}
 
 
 \subsection{Polinomska aproksimacijska shema}
 
-Algoritem FPTAS je lahko poljubno natančen, kar določa parameter $\epsilon$.
+Algoritem FPTAS je lahko poljubno natančen, kar določa parameter $\epsilon$. Ima
+lahko eksponentno časovno zahtevnost, če nastavimo $\epsilon = 0$ in uporabimo
+enake instance, kot smo jih uporabili za izčrpno preiskovanje.
 
+Poljubno slabe rezultate lahko dobimo z izbiro  $\epsilon > 2n$. Ob fiksnem
+$\epsilon$ pa bodo slabe instance problema tiste, kjer bodo optimalni predmeti
+ležali na robu intervala $x + \delta$ in bodo odstranjeni (predstavlja jih
+element $x$ z napako $\delta = \epsilon / 2n$). Tako lahko generiramo elemente
+oblike $A = \{x, \lfloor(1 + \delta) x \rfloor \}$. Slika \ref{fig:fptas}
+prikazuje primer, kjer je bil $A$ sestavljen iz $n$ elementov $x \in [500, 1000]$
+in $n$ elementov $x' = \lfloor(1 + \delta) x \rfloor$, $k = \sum x'$, $n = 10$.
+Vidimo, da se razmerje med optimalno in dobljeno rešitvijo manjša z večanjem
+vrednosti $\epsilon$.
 
-Tako, da trim ne poreže ničesar (dokaj veliki elementi med sabo).
+Sliki \ref{fig:ss4} in \ref{fig:ss5} prikazujeta, kako sta povezana čas izvajanja
+in vrednost $\epsilon$ za testna primera SS4 in SS5. Vidimo, da se čas izvajanja
+eksponentno veča, ko se $\epsilon$ približa vrednosti 0, saj takrat išče
+optimalno rešitev.
 
-Kako narediti največjo napako -> če jih je veliko trimmanih.
-
+\begin{figure}
+	\centering
+	\includegraphics[width=0.8\linewidth]{figs/fptas-bad.png}
+	\caption{Razmerje med rešitvijo algoritma FPTAS in optimalno rešitev v odvisnosti od $\epsilon$}
+	\label{fig:fptas}
+\end{figure}
 
 \begin{figure}
 	\centering
