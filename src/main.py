@@ -1,6 +1,8 @@
 """ Exact and approximate algorithms for subset sum problem """
 
 import timeit
+import random
+import math
 import matplotlib.pyplot as plt
 
 
@@ -106,6 +108,11 @@ def meausre_fptas(items, k):
     plt.show()
 
 
+def generate_bad_dyno(n):
+    A = [i for i in range(1, n+1)]
+    k = 2 ** n
+    return A, k
+
 def dyno_hard():
     times = []
     n = []
@@ -127,12 +134,13 @@ def generate_bad_exh(n):
     k = 2 ** n
     return items, k
 
+
 def exh_hard():
     times = []
     n = []
-    for i in range(5, 20):
+    for i in range(10, 26):
         items, k = generate_bad_exh(i)
-        t = timeit.timeit(wrapper(exact_dyn, items, k), number = 1)
+        t = timeit.timeit(wrapper(exact_exh, items, k), number = 1)
 
         n.append(i)
         times.append(t)
@@ -143,17 +151,75 @@ def exh_hard():
     plt.show()
 
 
+def generate_greedy_bad(n, k, percent):
+    min_value = math.floor((1 - percent) * k/2)
+    max_value = math.ceil((1 + percent) * k/2)
+
+    elements = [random.randint(min_value, max_value) for _ in range(n)]
+    elements.append(max_value + 1)
+    return elements, k
+
+def greedy_bad():
+    n = 10
+    r = 100
+    p = 0.05
+
+    tests = [i for i in range(1, r+1)]
+    while p <= 0.2:
+        differences = []
+        for _ in tests:
+            k = random.randint(100, 500)
+            items, k = generate_greedy_bad(n, k, p)
+            solution_approx = greedy(items, k)
+            solution_exact = exact_exh(items, k)
+
+            differences.append(solution_approx / solution_exact)
+
+        plt.plot(tests, differences, label = "deviation %.2f" % p)
+        p += 0.05
+    plt.xlabel("Tests")
+    plt.ylabel("Ratio between approximate and optimal solutions")
+    plt.legend()
+    plt.show()
 
 
-def generate_bad_dyno(n):
-    A = [i for i in range(1, n+1)]
-    k = 2 ** n
-    return A, k
+def generate_bad_fptas(n, epsilon):
+    trim_factor = epsilon / 4*n
+    k = 0
+    items = []
+
+    i = random.randint(500, 1000)
+    i_range = math.floor(i * (trim_factor + 1))
+    items = [i for _ in range(n)] + [i_range for _ in range(n)]
+    k = i_range * n
+
+    return items, k
+
+
+def fptas_bad():
+    n = 10
+    epsilon = 0
+    epsilons = []
+    ratios = []
+    while epsilon <= 3*n:
+        items, k = generate_bad_fptas(n, epsilon)
+        fptas_solution = fptas(items, k, epsilon)
+        optimal_solution = exact_exh(items, k)
+
+        factor = fptas_solution / optimal_solution
+        ratios.append(factor)
+        epsilons.append(epsilon)
+        epsilon += 0.1
+
+    plt.plot(epsilons, ratios)
+    plt.xlabel("Value of epsilon")
+    plt.ylabel("Ratio between approximate and optimal solutions")
+    plt.show()
+
 
 
 if __name__ == "__main__":
     items, k = get_input()
-
 
     print("Exact DYN time:")
     print(timeit.timeit(wrapper(exact_dyn, items, k), number = 1))
